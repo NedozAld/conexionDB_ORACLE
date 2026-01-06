@@ -4,46 +4,47 @@ const { Sequelize, QueryTypes } = require('sequelize');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Credenciales por defecto
+const DEFAULT_USER = 'hr';
+const DEFAULT_PASSWORD = 'hr';
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Estilos compartidos
+// Estilos globales y Bootstrap
+const bootstrapLink = `<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">`;
+
 const estilosGlobales = `<style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 2rem; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .container { max-width: 1200px; margin: 0 auto; }
-    .header { text-align: center; color: white; margin-bottom: 2rem; }
-    .header h1 { font-size: 2.5rem; text-transform: uppercase; letter-spacing: 2px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); margin-bottom: 0.5rem; }
-    .user-info { background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); text-align: center; }
-    .user-info h2 { color: #667eea; font-size: 1.3rem; margin-bottom: 1rem; }
-    .user-badge { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.5rem 1.5rem; border-radius: 25px; font-weight: 600; font-size: 1.1rem; margin-bottom: 1.5rem; }
-    .form-group { margin-bottom: 1rem; }
-    .form-group label { display: block; margin-bottom: 0.5rem; color: #333; font-weight: 600; }
-    .form-group select { width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s ease; }
-    .form-group select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
-    .view-btn { background: linear-gradient(135deg, #11c76d 0%, #00a651 100%); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.5px; width: 100%; }
-    .view-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(17, 199, 109, 0.4); }
-    .view-btn:active { transform: translateY(0); }
-    table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); margin-bottom: 2rem; }
-    th { background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); color: white; padding: 1rem; text-align: left; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.95rem; border-bottom: 3px solid #0d47a1; }
-    td { padding: 1rem; border-bottom: 1px solid #e0e0e0; text-align: left; color: #333; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover { background-color: #f5f5f5; }
-    .back-btn { display: block; text-align: center; margin-top: 2rem; background: white; color: #667eea; padding: 1rem 2rem; border-radius: 10px; text-decoration: none; font-weight: 600; border: 2px solid #667eea; transition: all 0.3s ease; width: fit-content; margin-left: auto; margin-right: auto; cursor: pointer; }
-    .back-btn:hover { background: #667eea; color: white; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); }
-    .alerta { background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 2rem; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); text-align: center; color: #d32f2f; font-size: 1.2rem; font-weight: 600; margin-bottom: 2rem; border: 2px solid #d32f2f; }
-    .success-box { background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 2rem; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); text-align: center; color: #1976d2; font-size: 1.1rem; margin-bottom: 2rem; border-left: 5px solid #1976d2; }
+  body { background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08), transparent 25%), radial-gradient(circle at 80% 0%, rgba(255,255,255,0.12), transparent 30%), linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+  .glass-card { background: rgba(255,255,255,0.93); border-radius: 16px; box-shadow: 0 12px 35px rgba(0,0,0,0.18); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.35); }
+  .section-title { color: #0f172a; font-weight: 700; letter-spacing: 0.5px; }
+  .hero-text { text-shadow: 0 6px 18px rgba(0,0,0,0.25); }
+  .prime-pill { display: inline-flex; align-items: center; justify-content: center; padding: 0.65rem 0.9rem; border-radius: 12px; font-weight: 700; color: #0b3b2c; background: linear-gradient(135deg, #c8f7dc, #8de4b1); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 4px 10px rgba(0,0,0,0.08); }
+  .stat-card { border: none; background: linear-gradient(135deg, #4f46e5, #8b5cf6); color: #fff; box-shadow: 0 12px 30px rgba(79,70,229,0.35); }
+  .stat-card .card-title { text-transform: uppercase; letter-spacing: 0.8px; font-size: 0.85rem; opacity: 0.9; }
+  .stat-card .display-6 { font-weight: 700; }
+  .table thead th { background: #111827; color: #f9fafb; border: none; }
+  .table tbody tr:hover { background: rgba(17,24,39,0.04); }
+  .pagination .page-link { border: none; color: #4f46e5; font-weight: 600; }
+  .pagination .active > .page-link { background: #4f46e5; color: #fff; box-shadow: 0 10px 25px rgba(79,70,229,0.35); }
+  .btn-ghost { border: 1px solid rgba(255,255,255,0.6); color: #fff; background: rgba(255,255,255,0.1); }
+  .btn-ghost:hover { background: rgba(255,255,255,0.2); color: #fff; }
+  .badge-soft { background: rgba(255,255,255,0.18); color: #fff; border: 1px solid rgba(255,255,255,0.4); }
+  .muted { color: #64748b; }
 </style>`;
 
-// Sirve el formulario
+// Ruta para mostrar el formulario
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'form.html'));
+  res.sendFile(path.join(__dirname, 'public', 'numeros-primos.html'));
 });
 
-// Ruta principal de consulta con combo box
-app.post('/consulta', async (req, res) => {
-  const { usuario, password } = req.body;
-  const sequelize = new Sequelize('XE', usuario, password, {
+// Ruta para ver resultados con paginación (GET)
+app.get('/primos', async (req, res) => {
+  const page = parseInt(req.query.page || '1', 10) || 1;
+  const limit = 20; // 20 registros por página
+  const offset = (page - 1) * limit;
+
+  const sequelize = new Sequelize('XE', DEFAULT_USER, DEFAULT_PASSWORD, {
     host: 'localhost',
     dialect: 'oracle',
     port: 1521,
@@ -55,350 +56,51 @@ app.post('/consulta', async (req, res) => {
 
   try {
     await sequelize.authenticate();
-    
-    // Obtener las tablas disponibles
-    const resultados = await sequelize.query(
-      `SELECT TABLE_NAME, GRANTOR, PRIVILEGE FROM ALL_TAB_PRIVS WHERE GRANTEE = :usuario`,
+
+    const totalPrimos = await sequelize.query(
+      `SELECT COUNT(*) AS TOTAL FROM (SELECT NUMERO_PRIMO FROM NUMEROS_PRIMOS GROUP BY NUMERO_PRIMO)`,
+      { type: QueryTypes.SELECT }
+    );
+    const total = totalPrimos[0]?.TOTAL || 0;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    // Construir arreglo de páginas con elipsis para navegación rápida
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (page > 3) pages.push('ellipsis-left');
+      const windowStart = Math.max(2, page - 1);
+      const windowEnd = Math.min(totalPages - 1, page + 1);
+      for (let i = windowStart; i <= windowEnd; i++) pages.push(i);
+      if (page < totalPages - 2) pages.push('ellipsis-right');
+      pages.push(totalPages);
+    }
+
+    const primos = await sequelize.query(
+      `WITH base AS (
+           SELECT NUMERO_PRIMO, FECHA_GENERACION, USUARIO_GENERADOR,
+                  ROW_NUMBER() OVER (PARTITION BY NUMERO_PRIMO ORDER BY FECHA_GENERACION DESC) rn_dup
+           FROM NUMEROS_PRIMOS
+         ),
+         dedup AS (
+           SELECT NUMERO_PRIMO, FECHA_GENERACION, USUARIO_GENERADOR
+           FROM base WHERE rn_dup = 1
+         ),
+         ordered AS (
+           SELECT NUMERO_PRIMO, FECHA_GENERACION, USUARIO_GENERADOR,
+                  ROW_NUMBER() OVER (ORDER BY NUMERO_PRIMO ASC) rn_row
+           FROM dedup
+         )
+       SELECT NUMERO_PRIMO, FECHA_GENERACION, USUARIO_GENERADOR
+       FROM ordered
+       WHERE rn_row > :offset AND rn_row <= :offset_plus
+       ORDER BY NUMERO_PRIMO ASC`,
       {
         type: QueryTypes.SELECT,
-        replacements: { usuario: usuario.toUpperCase() }
+        replacements: { offset, offset_plus: offset + limit }
       }
-    );
-
-    const html = `<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panel de Usuario</title>
-  ${estilosGlobales}
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>✅ CONSULTA EXITOSA PARA USUARIO ${usuario.toUpperCase()}</h1>
-    </div>
-    
-    <div class="user-info">
-      <h2>Información del usuario:</h2>
-      <div class="user-badge">🔐 Usuario: ${usuario}</div>
-      
-      <div class="form-group">
-        <label for="opciones">Selecciona una opción:</label>
-        <select id="opciones" name="opciones">
-          <option value="">-- Selecciona una opción --</option>
-          <option value="tablas">📋 CONTENIDO DE LAS TABLAS</option>
-          <option value="roles">👤 CONSULTA DE ROLES DEL USUARIO</option>
-          <option value="privilegios">🔑 PRIVILEGIOS DEL USUARIO</option>
-        </select>
-      </div>
-      
-      <form id="formulario" action="/consulta/vista" method="POST" style="display: none;">
-        <input type="hidden" name="usuario" value="${usuario}">
-        <input type="hidden" name="password" value="${password}">
-        <input type="hidden" id="tipo" name="tipo" value="">
-        <button type="submit" class="view-btn">Ver</button>
-      </form>
-    </div>
-
-    ${resultados.length === 0 ? `
-      <div class="alerta">El usuario <b>${usuario}</b> no tiene acceso a ninguna tabla.</div>
-    ` : `
-      <table>
-        <thead>
-          <tr>
-            <th>OWNER</th>
-            <th>TABLE_NAME</th>
-            <th>PRIVILEGE</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${resultados.map(fila => `
-            <tr>
-              <td>${fila.GRANTOR}</td>
-              <td><strong>${fila.TABLE_NAME}</strong></td>
-              <td>
-                ${fila.PRIVILEGE === 'SELECT' ? `
-                  <form action="/tabla/${encodeURIComponent(fila.TABLE_NAME)}" method="POST" class="action-form">
-                    <input type="hidden" name="usuario" value="${usuario}">
-                    <input type="hidden" name="password" value="${password}">
-                    <input type="hidden" name="owner" value="${fila.GRANTOR}">
-                    <button type="submit" class="view-btn" style="width: auto; padding: 0.5rem 1rem;">👁️ Ver</button>
-                  </form>
-                ` : `<span style="color: #999;">${fila.PRIVILEGE}</span>`}
-              </td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    `}
-
-    <a href="/" class="back-btn">🔙 Volver al inicio</a>
-  </div>
-
-  <script>
-    document.getElementById('opciones').addEventListener('change', function() {
-      if (this.value) {
-        document.getElementById('tipo').value = this.value;
-        document.getElementById('formulario').style.display = 'block';
-      } else {
-        document.getElementById('formulario').style.display = 'none';
-      }
-    });
-  </script>
-</body>
-</html>`;
-
-    res.send(html);
-  } catch (error) {
-    let mensajeError = 'Error al conectar o consultar';
-    let titulo = '❌ Error de conexión';
-
-    if (error.message.includes('ORA-01017') || error.message.includes('ORA-28000')) {
-      mensajeError = 'Usuario no encontrado o contraseña incorrecta.';
-      titulo = '❌ USUARIO NO ENCONTRADO O SU CONTRASEÑA ESTA MAL ESCRITA';
-    }
-
-    const html = `<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Error</title>
-  ${estilosGlobales}
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>${titulo}</h1>
-    </div>
-    <div class="alerta">${mensajeError}</div>
-    <a href="/" class="back-btn">🔙 Volver al inicio</a>
-  </div>
-</body>
-</html>`;
-
-    res.send(html);
-  } finally {
-    await sequelize.close();
-  }
-});
-
-// Ruta para mostrar las diferentes vistas
-app.post('/consulta/vista', async (req, res) => {
-  const { usuario, password, tipo } = req.body;
-  const sequelize = new Sequelize('XE', usuario, password, {
-    host: 'localhost',
-    dialect: 'oracle',
-    port: 1521,
-    dialectOptions: {
-      connectString: 'localhost/XE'
-    },
-    logging: false
-  });
-
-  try {
-    await sequelize.authenticate();
-
-    let contenido = '';
-    let titulo = '';
-
-    if (tipo === 'roles') {
-      // CONSULTA DE ROLES DEL USUARIO
-      const roles = await sequelize.query(
-        `SELECT * FROM DBA_ROLE_PRIVS WHERE GRANTEE = :usuario`,
-        {
-          type: QueryTypes.SELECT,
-          replacements: { usuario: usuario.toUpperCase() }
-        }
-      );
-
-      titulo = `ROLES ASIGNADOS PARA ${usuario.toUpperCase()}`;
-      
-      if (roles.length > 0) {
-        contenido = `<table>
-          <thead>
-            <tr>
-              <th>GRANTEE</th>
-              <th>GRANTED_ROLE</th>
-              <th>ADMIN_OPTION</th>
-              <th>DEFAULT_ROLE</th>
-            </tr>
-          </thead>
-          <tbody>`;
-        
-        roles.forEach(rol => {
-          contenido += `<tr>
-            <td>${rol.GRANTEE}</td>
-            <td>${rol.GRANTED_ROLE}</td>
-            <td>${rol.ADMIN_OPTION}</td>
-            <td>${rol.DEFAULT_ROLE}</td>
-          </tr>`;
-        });
-        
-        contenido += `</tbody></table>`;
-      } else {
-        contenido = `<div class="alerta">El usuario no tiene roles asignados.</div>`;
-      }
-
-    } else if (tipo === 'privilegios') {
-      // PRIVILEGIOS DEL USUARIO
-      const privilegios = await sequelize.query(
-        `SELECT * FROM DBA_SYS_PRIVS WHERE GRANTEE = :usuario`,
-        {
-          type: QueryTypes.SELECT,
-          replacements: { usuario: usuario.toUpperCase() }
-        }
-      );
-
-      titulo = `PRIVILEGIOS DE SISTEMA PARA ${usuario.toUpperCase()}`;
-      
-      if (privilegios.length > 0) {
-        contenido = `<table>
-          <thead>
-            <tr>
-              <th>GRANTEE</th>
-              <th>PRIVILEGE</th>
-              <th>ADMIN_OPTION</th>
-            </tr>
-          </thead>
-          <tbody>`;
-        
-        privilegios.forEach(priv => {
-          contenido += `<tr>
-            <td>${priv.GRANTEE}</td>
-            <td>${priv.PRIVILEGE}</td>
-            <td>${priv.ADMIN_OPTION}</td>
-          </tr>`;
-        });
-        
-        contenido += `</tbody></table>`;
-      } else {
-        contenido = `<div class="alerta">El usuario no tiene privilegios de sistema asignados.</div>`;
-      }
-
-    } else if (tipo === 'tablas') {
-      // CONTENIDO DE LAS TABLAS
-      const tablas = await sequelize.query(
-        `SELECT DISTINCT TABLE_NAME, GRANTOR FROM ALL_TAB_PRIVS WHERE GRANTEE = :usuario`,
-        {
-          type: QueryTypes.SELECT,
-          replacements: { usuario: usuario.toUpperCase() }
-        }
-      );
-
-      titulo = `TABLAS DISPONIBLES PARA ${usuario.toUpperCase()}`;
-      
-      if (tablas.length > 0) {
-        contenido = `<table>
-          <thead>
-            <tr>
-              <th>NOMBRE DE TABLA</th>
-              <th>OWNER</th>
-              <th>ACCIÓN</th>
-            </tr>
-          </thead>
-          <tbody>`;
-        
-        tablas.forEach(tabla => {
-          contenido += `<tr>
-            <td>${tabla.TABLE_NAME}</td>
-            <td>${tabla.GRANTOR}</td>
-            <td>
-              <form action="/tabla/${encodeURIComponent(tabla.TABLE_NAME)}" method="POST" style="display:inline;">
-                <input type="hidden" name="usuario" value="${usuario}">
-                <input type="hidden" name="password" value="${password}">
-                <input type="hidden" name="owner" value="${tabla.GRANTOR}">
-                <button type="submit" class="view-btn" style="width: auto; padding: 0.5rem 1rem;">👁️ Ver Contenido</button>
-              </form>
-            </td>
-          </tr>`;
-        });
-        
-        contenido += `</tbody></table>`;
-      } else {
-        contenido = `<div class="alerta">El usuario no tiene tablas disponibles.</div>`;
-      }
-    }
-
-    const html = `<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${titulo}</title>
-  ${estilosGlobales}
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>${titulo}</h1>
-    </div>
-    
-    <div class="user-info">
-      <div class="user-badge">🔐 Usuario: ${usuario}</div>
-    </div>
-
-    ${contenido}
-
-    <form action="/consulta" method="POST" style="display:inline;">
-      <input type="hidden" name="usuario" value="${usuario}">
-      <input type="hidden" name="password" value="${password}">
-      <button type="submit" class="back-btn">🔙 Volver a Consulta Principal</button>
-    </form>
-  </div>
-</body>
-</html>`;
-
-    res.send(html);
-  } catch (error) {
-    const html = `<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>Error</title>
-  ${estilosGlobales}
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>❌ Error</h1>
-    </div>
-    <div class="alerta">Error al consultar: ${error.message}</div>
-    <a href="/" class="back-btn">🔙 Volver al inicio</a>
-  </div>
-</body>
-</html>`;
-    res.send(html);
-  } finally {
-    await sequelize.close();
-  }
-});
-
-// Ruta para consultar tabla específica
-app.post('/tabla/:tableName', async (req, res) => {
-  const { usuario, password, owner } = req.body;
-  const { tableName } = req.params;
-
-  if (!usuario || !password || !owner) {
-    return res.send(`<h2>Error: Faltan parámetros requeridos</h2>`);
-  }
-
-  const sequelize = new Sequelize('XE', usuario, password, {
-    host: 'localhost',
-    dialect: 'oracle',
-    port: 1521,
-    dialectOptions: {
-      connectString: 'localhost/XE'
-    },
-    logging: false
-  });
-
-  try {
-    await sequelize.authenticate();
-    const registros = await sequelize.query(
-      `SELECT * FROM "${owner}"."${tableName}" FETCH FIRST 50 ROWS ONLY`,
-      { type: QueryTypes.SELECT }
     );
 
     let html = `<!DOCTYPE html>
@@ -406,51 +108,244 @@ app.post('/tabla/:tableName', async (req, res) => {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Contenido de ${tableName}</title>
+  <title>Números Primos</title>
+  ${bootstrapLink}
   ${estilosGlobales}
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>📊 CONTENIDO DE LA TABLA ${tableName.toUpperCase()}</h1>
+  <div class="container py-4">
+    <div class="text-center text-white mb-4">
+      <span class="badge badge-soft px-3 py-2">🔐 Sesión HR</span>
+      <h1 class="fw-bold hero-text mt-2">📋 Lista de Números Primos</h1>
+      <p class="mb-0 opacity-75">Consulta paginada y ordenada de los primos generados</p>
     </div>
-    
-    <div class="user-info">
-      <div class="user-badge">🔐 Usuario: ${usuario}</div>
-    </div>`;
 
-    if (registros.length > 0) {
-      html += `<table><thead><tr>`;
-      Object.keys(registros[0]).forEach(col => {
-        html += `<th>${col}</th>`;
-      });
-      html += `</tr></thead><tbody>`;
-      
-      registros.forEach(row => {
-        html += `<tr>`;
-        Object.values(row).forEach(val => {
-          const valor = val !== null ? val : '<em style="color: #ccc;">NULL</em>';
-          html += `<td>${valor}</td>`;
-        });
-        html += `</tr>`;
-      });
-      html += `</tbody></table>`;
-    } else {
-      html += `<div class="alerta">📭 La tabla está vacía.</div>`;
-    }
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card stat-card h-100">
+          <div class="card-body text-center">
+            <div class="card-title mb-1">Total almacenados</div>
+            <div class="display-6">${total}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card stat-card h-100">
+          <div class="card-body text-center">
+            <div class="card-title mb-1">Usuario</div>
+            <div class="display-6">${DEFAULT_USER.toUpperCase()}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card stat-card h-100">
+          <div class="card-body text-center">
+            <div class="card-title mb-1">Primer primo listado</div>
+            <div class="display-6">${primos.length > 0 ? primos[0].NUMERO_PRIMO : 'N/A'}</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    html += `<form action="/consulta" method="POST" style="display:inline;">
-      <input type="hidden" name="usuario" value="${usuario}">
-      <input type="hidden" name="password" value="${password}">
-      <button type="submit" class="back-btn">🔙 Volver</button>
-    </form>
+    <div class="card glass-card border-0 mb-4">
+      <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+        <h2 class="h5 section-title mb-0">Vista en grilla</h2>
+        <span class="badge text-bg-primary">${primos.length} en página</span>
+      </div>
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2">`;
+
+    primos.forEach(primo => {
+      html += `<span class="prime-pill">${primo.NUMERO_PRIMO}</span>`;
+    });
+
+    html += `</div>
+      </div>
+    </div>
+
+    <div class="card glass-card border-0 mb-4">
+      <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+        <h2 class="h5 section-title mb-0">Tabla detallada</h2>
+        <span class="muted">Página ${page} de ${totalPages}</span>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>🔢 Número Primo</th>
+                <th>📅 Fecha de Generación</th>
+                <th>👤 Usuario</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+    primos.forEach(primo => {
+      const fecha = new Date(primo.FECHA_GENERACION).toLocaleString('es-MX');
+      html += `<tr>
+        <td class="fw-semibold">${primo.NUMERO_PRIMO}</td>
+        <td>${fecha}</td>
+        <td>${primo.USUARIO_GENERADOR}</td>
+      </tr>`;
+    });
+
+    html += `</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <nav aria-label="Paginación" class="mb-4">
+      <ul class="pagination justify-content-center gap-1 flex-wrap">
+        <li class="page-item ${page <= 1 ? 'disabled' : ''}">
+          <a class="page-link" href="/primos?page=${page-1}">Anterior</a>
+        </li>
+        ${pages.map(p => {
+          if (p === 'ellipsis-left' || p === 'ellipsis-right') {
+            return `<li class="page-item disabled"><span class="page-link">…</span></li>`;
+          }
+          return `<li class="page-item ${p === page ? 'active' : ''}"><a class="page-link" href="/primos?page=${p}">${p}</a></li>`;
+        }).join('')}
+        <li class="page-item ${page >= totalPages ? 'disabled' : ''}">
+          <a class="page-link" href="/primos?page=${page+1}">Siguiente</a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="d-flex justify-content-center">
+      <a href="/" class="btn btn-light px-4 shadow-sm">🔄 Generar más primos</a>
+    </div>
   </div>
 </body>
 </html>`;
 
     res.send(html);
   } catch (error) {
-    res.send(`<h2>Error al consultar la tabla: ${error.message}</h2>`);
+    const errorMsg = error.message;
+    res.send(`<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Error</title>
+  ${bootstrapLink}
+  ${estilosGlobales}
+</head>
+<body>
+  <div class="container py-5">
+    <div class="card glass-card border-0 mx-auto" style="max-width: 720px;">
+      <div class="card-body text-center">
+        <div class="mb-3"><span class="badge text-bg-danger px-3 py-2">Error</span></div>
+        <h1 class="fw-bold mb-3">❌ No se pudo procesar</h1>
+        <p class="lead">${errorMsg.includes('ORA-00942') ? 
+          '⚠️ La tabla NUMEROS_PRIMOS no existe. Por favor ejecuta el script SQL primero.' : 
+          errorMsg.includes('ORA-01017') ?
+          '🔒 Error de autenticación.' :
+          '❌ Error: ' + errorMsg
+        }</p>
+        <a href="/" class="btn btn-dark mt-3">🔙 Volver</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`);
+  } finally {
+    await sequelize.close();
+  }
+});
+
+// Ruta para generar números primos
+app.post('/generar-primos', async (req, res) => {
+  const { cantidad } = req.body;
+  
+  // Validar cantidad
+  if (!cantidad || cantidad < 1 || cantidad > 1000) {
+    return res.send(`<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Error</title>
+  ${bootstrapLink}
+  ${estilosGlobales}
+</head>
+<body>
+  <div class="container py-5">
+    <div class="card glass-card border-0 mx-auto" style="max-width: 720px;">
+      <div class="card-body text-center">
+        <div class="mb-3"><span class="badge text-bg-danger px-3 py-2">Dato inválido</span></div>
+        <h1 class="fw-bold mb-3">❌ La cantidad debe ser entre 1 y 1000</h1>
+        <a href="/" class="btn btn-dark mt-2">🔙 Volver</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`);
+  }
+
+  const sequelize = new Sequelize('XE', DEFAULT_USER, DEFAULT_PASSWORD, {
+    host: 'localhost',
+    dialect: 'oracle',
+    port: 1521,
+    dialectOptions: {
+      connectString: 'localhost/XE'
+    },
+    logging: false
+  });
+
+  try {
+    await sequelize.authenticate();
+    
+    // Calcular cuántos faltan para llegar al total solicitado (sin duplicados)
+    const existentes = await sequelize.query(
+      `SELECT COUNT(DISTINCT NUMERO_PRIMO) AS TOTAL FROM NUMEROS_PRIMOS`,
+      { type: QueryTypes.SELECT }
+    );
+    const actuales = existentes[0]?.TOTAL || 0;
+    const faltan = Math.max(0, parseInt(cantidad) - actuales);
+
+    if (faltan > 0) {
+      await sequelize.query(
+        `BEGIN SP_GENERAR_NUMEROS_PRIMOS(:cantidad, :usuario); END;`,
+        {
+          replacements: { cantidad: faltan, usuario: DEFAULT_USER.toUpperCase() }
+        }
+      );
+    }
+
+    // Redirigir a la página de resultados con paginación
+    res.redirect('/primos?page=1');
+  } catch (error) {
+    const errorMsg = error.message;
+    res.send(`<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Error</title>
+  ${bootstrapLink}
+  ${estilosGlobales}
+</head>
+<body>
+  <div class="container py-5">
+    <div class="card glass-card border-0 mx-auto" style="max-width: 780px;">
+      <div class="card-body text-center">
+        <div class="mb-3"><span class="badge text-bg-danger px-3 py-2">Error</span></div>
+        <h1 class="fw-bold mb-3">❌ No se pudieron generar los números</h1>
+        <p class="lead">${errorMsg.includes('ORA-00942') ? 
+          '⚠️ La tabla NUMEROS_PRIMOS no existe. Por favor ejecuta el script SQL primero.' : 
+          errorMsg.includes('ORA-00955') ? 
+          '⚠️ El procedimiento SP_GENERAR_NUMEROS_PRIMOS no existe. Por favor ejecuta el script SQL primero.' :
+          errorMsg.includes('ORA-01017') ?
+          '🔒 Usuario o contraseña incorrectos.' :
+          '❌ Error: ' + errorMsg
+        }</p>
+        <a href="/" class="btn btn-dark mt-3">🔙 Volver</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`);
   } finally {
     await sequelize.close();
   }

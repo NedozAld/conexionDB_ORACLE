@@ -1,1 +1,6 @@
-{}
+{
+  "watch": ["index.js", "public", "config"],
+  "ext": "js,html,css",
+  "ignore": ["node_modules"],
+  "exec": "node index.js"
+}

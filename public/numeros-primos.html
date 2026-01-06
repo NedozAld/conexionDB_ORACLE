@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generador de Números Primos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        body { background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08), transparent 25%), radial-gradient(circle at 80% 0%, rgba(255,255,255,0.12), transparent 30%), linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .glass-card { background: rgba(255,255,255,0.93); border-radius: 16px; box-shadow: 0 12px 35px rgba(0,0,0,0.18); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.35); }
+        .hero-text { text-shadow: 0 6px 18px rgba(0,0,0,0.25); }
+        .badge-soft { background: rgba(255,255,255,0.18); color: #fff; border: 1px solid rgba(255,255,255,0.4); }
+        .input-group-text { background: #eef2ff; border-color: #e5e7eb; }
+        .btn-gradient { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; border: none; box-shadow: 0 12px 30px rgba(34,197,94,0.35); }
+        .btn-gradient:hover { color: #fff; transform: translateY(-1px); box-shadow: 0 16px 36px rgba(34,197,94,0.45); }
+        .muted { color: #64748b; }
+    </style>
+</head>
+
+<body>
+    <div class="container py-5">
+        <div class="text-center text-white mb-4">
+            <span class="badge badge-soft px-3 py-2">🔐 Sesión HR</span>
+            <h1 class="fw-bold hero-text mt-2">🔢 Generador de Números Primos</h1>
+            <p class="mb-0 opacity-75">Genera y almacena primos en Oracle XE (usuario HR)</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-12 col-lg-5">
+                <div class="glass-card p-4 h-100 text-center">
+                    <h2 class="h5 fw-bold mb-3">Información de conexión</h2>
+                    <div class="badge bg-primary-subtle text-primary-emphasis px-3 py-2 mb-3">👤 Usuario: HR</div>
+                    <p class="muted mb-1">Base de Datos: Oracle XE</p>
+                    <p class="muted mb-0">Tabla: NUMEROS_PRIMOS</p>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-7">
+                <div class="glass-card p-4 h-100">
+                    <h2 class="h5 fw-bold mb-4">📊 Generación de números primos</h2>
+                    <form action="/generar-primos" method="POST" novalidate>
+                        <div class="mb-3">
+                            <label for="cantidad" class="form-label fw-semibold">Cantidad de primos</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text">🔢</span>
+                                <input type="number" class="form-control" id="cantidad" name="cantidad" placeholder="Ej: 25" min="1" max="1000" required>
+                            </div>
+                            <div class="form-text">Ingresa un número entre 1 y 1000. Recomendado: 50</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-gradient w-100 py-3 fw-bold">✨ Generar números primos</button>
+                    </form>
+
+                    <div class="alert alert-primary mt-4 mb-0" role="alert">
+                        <div class="fw-semibold mb-1">ℹ️ Información</div>
+                        <ul class="mb-0 ps-3">
+                            <li>Los números se guardan en la tabla NUMEROS_PRIMOS.</li>
+                            <li>Se usa automáticamente el usuario HR.</li>
+                            <li>Sin duplicados: se genera solo lo que falte.</li>
+                              <li>Resultados paginados de 20 en 20.</li>
+                        </ul>
+                        <div class="muted small mt-2">Asegúrate de tener creada la tabla y el procedimiento en la base.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Validación del formulario
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const cantidad = document.getElementById('cantidad').value;
+            if (cantidad < 1 || cantidad > 1000) {
+                e.preventDefault();
+                alert('Por favor ingresa un número entre 1 y 1000');
+                return false;
+            }
+        });
+    </script>
+</body>
+
+</html>
